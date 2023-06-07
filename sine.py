@@ -1,13 +1,17 @@
+import video_maker
+
 import matplotlib.pyplot as plt
 import numpy as np
 from tensorflow import keras
-from video_maker import make_video
 
 # Constants
-NUMBER_OF_EPOCHS = 10
+CYCLES = 20
 FPS = 10
-OUTPUT_VIDEO = "sine_function_video.mp4"
-FRAME_SIZE = (640, 480)  # Width, height
+VIDEO_NAME = "sine_function_video.mp4"
+WINDOW_SIZE = (640, 480)  # Width, height
+
+
+frame_writer = video_maker.create_video_formatter(VIDEO_NAME, FPS, WINDOW_SIZE)
 
 # Generate sine data
 x = np.linspace(0, 2 * np.pi, 100)
@@ -23,7 +27,7 @@ model = keras.Sequential([
 model.compile(optimizer='adam', loss='mean_squared_error')
 
 # Train the model
-for epoch in range(NUMBER_OF_EPOCHS):
+for cycle in range(CYCLES):
     model.fit(x, y, epochs=100, verbose=1)
     y_pred = model.predict(x)
 
@@ -33,28 +37,11 @@ for epoch in range(NUMBER_OF_EPOCHS):
     plt.legend()
 
     # Save the current plot as an image file
-    plt.savefig(f"plot_{epoch:04d}.png")
+    plt.savefig("sine_plot.png")
     plt.clf()
 
-model.save('sine_model.h5')
+    video_maker.add_frame(frame_writer)
 
-make_video(FPS, OUTPUT_VIDEO, FRAME_SIZE, NUMBER_OF_EPOCHS)
+# model.save('sine_model.h5')
 
-# # Create the video
-# fourcc = cv2.VideoWriter_fourcc(*"mp4v")  # Codec
-# video_writer = cv2.VideoWriter(OUTPUT_VIDEO, fourcc, FPS, FRAME_SIZE)
-
-# # Write each frame to the video
-# for epoch in range(NUMBER_OF_EPOCHS):
-#     # Read the frame image
-#     frame_path = f"plot_{epoch:04d}.png"
-#     frame = cv2.imread(frame_path)
-
-#     # Write the frame to the video
-#     video_writer.write(frame)
-
-#     # Remove the frame image file
-#     os.remove(frame_path)
-
-# # Release the VideoWriter and close the video file
-# video_writer.release()
+video_maker.release_video(frame_writer)
