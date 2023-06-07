@@ -2,15 +2,17 @@ import cv2
 import os
 
 
-def create_video_formatter(video_name, fps, window_size):
+def create_video_formatter(file_name, fps, window_size):
+    video_name = file_name + "_function_video.mp4"
+
     fourcc = cv2.VideoWriter_fourcc(*"mp4v")  # Codec
     video_writer = cv2.VideoWriter(video_name, fourcc, fps, window_size)
     return video_writer
 
 
-def add_frame(video_writer):
+def add_frame(video_writer, file_name):
     # Read the frame image
-    frame_path = "sine_plot.png"
+    frame_path = file_name + "_plot.png"
     frame = cv2.imread(frame_path)
 
     # Write the frame to the video
