@@ -40,3 +40,5 @@ def use_model(model, x, y, cycles, file_name):
         video_maker.add_frame(frame_writer, file_name)
 
     video_maker.release_video(frame_writer)
+    print("All done!")
+    return

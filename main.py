@@ -2,8 +2,11 @@ import sine_uti
 import cosine_uti
 
 import tkinter as tk
+from tkinter import ttk
+import time
 from PIL import Image, ImageTk
 import os
+import cv2
 # import subprocess
 
 
@@ -23,17 +26,19 @@ def create_home_screen():
     cos_img = cos_img.resize((320, 240))
     cos_btn_img = ImageTk.PhotoImage(cos_img)
 
-    title = tk.Label(root, text="Choose a function")
-    button_grid = tk.Frame(root)
-    sin_button = tk.Button(button_grid, text="Sine", image=sin_btn_img, compound="bottom",
-                           command=lambda: create_pre_start_screen("sine"))
+    title = ttk.Label(root, text="Choose a function")
+    button_grid = ttk.Frame(root)
+    sin_button = ttk.Button(button_grid, text="Sine", image=sin_btn_img, compound="bottom", padding=(10, 5, 10, 5),
+                            command=lambda: create_pre_start_screen("sine"))
     sin_button.image = sin_btn_img
-    cos_button = tk.Button(button_grid, text="Cosine", image=cos_btn_img, compound="bottom",
-                           command=lambda: create_pre_start_screen("cosine"))
+    cos_button = ttk.Button(button_grid, text="Cosine", image=cos_btn_img, compound="bottom", padding=(10, 5, 10, 5),
+                            command=lambda: create_pre_start_screen("cosine"))
     cos_button.image = cos_btn_img
-    tan_button = tk.Button(button_grid, text="Tangent", height=15, width=30, command=lambda: create_pre_start_screen("tan"))
-    cot_button = tk.Button(button_grid, text="Cotangent", height=15, width=30, command=lambda: create_pre_start_screen("cotan"))
-    end_button = tk.Button(root, text="Exit", command=root.destroy)
+    tan_button = ttk.Button(button_grid, text="Tangent", padding=(10, 5, 10, 5),
+                            command=lambda: create_pre_start_screen("tan"))
+    cot_button = ttk.Button(button_grid, text="Cotangent", padding=(10, 5, 10, 5),
+                            command=lambda: create_pre_start_screen("cotan"))
+    end_button = ttk.Button(root, text="Exit", padding=(10, 5, 10, 5), command=root.destroy)
 
     # Layout
     title.pack()
@@ -147,17 +152,78 @@ def start_function(name, layers, neurons, cycles, length):
 
     if name == "sine":
         sine_uti.make_sine(name, layers, neurons, cycles, length)
+        after_function("videos/sine_function_video.mp4")
 
     if name == "cosine":
         cosine_uti.make_cosine(name, layers, neurons, cycles, length)
+        after_function("videos/cosine_function_video.mp4")
+
+    if name == "tangent":
+        pass
+
+    if name == "cotangent":
+        pass
 
 
-root = tk.Tk()
-root.title("AI Trigonometry Functions Showcase")
-root.geometry("800x600")
+# def after_function(video_name):
+#     destroy_prev_screen()
 
-create_home_screen()
+#     def play_video():
+#         os.system(f'start {video_name}')
 
-root.eval('tk::PlaceWindow . center')
-# root.resizable(False, False)
-root.mainloop()
+#     video_button = tk.Button(root, text="Play Video", command=play_video)
+#     video_button.pack()
+
+def after_function(video_name):
+    destroy_prev_screen()
+
+    cap = cv2.VideoCapture(video_name)
+
+    # Get the video dimensions
+    width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+    height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+
+    # Create a canvas to display the video frames
+    canvas = tk.Canvas(root, width=width, height=height, bg="white")
+    canvas.pack()
+
+    while True:
+        while cap.isOpened():
+            ret, frame = cap.read()
+
+            if ret:
+                # Convert the frame to RGB format
+                frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+
+                # Create an image from the frame
+                image = Image.fromarray(frame)
+                photo = ImageTk.PhotoImage(image)
+
+                # Update the canvas with the new image
+                canvas.create_image(0, 0, image=photo, anchor=tk.NW)
+
+                time.sleep(0.1)
+                root.update()
+            else:
+                break
+
+        time.sleep(2)
+
+        # Reset the video to the beginning
+        cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
+
+    cap.release()
+
+
+if __name__ == "__main__":
+    root = tk.Tk()
+    root.title("AI Trigonometry Functions Showcase")
+    root.geometry("800x600")
+
+    style = ttk.Style(root)
+    style.configure('.', font=('Calibri', 20))
+    create_home_screen()
+
+    root.eval('tk::PlaceWindow . center')
+    # root.resizable(False, False)
+    root.mainloop()
