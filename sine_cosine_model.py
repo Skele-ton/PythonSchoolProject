@@ -3,21 +3,25 @@ import matplotlib.pyplot as plt
 from tensorflow import keras
 
 
-def create_model(neurons):
+def create_model(layers, neurons, name):
     # Define the model architecture
     model = keras.Sequential([
         keras.layers.Dense(neurons, activation='sigmoid', input_shape=(1,)),
-        keras.layers.Dense(neurons, activation='sigmoid'),
-        keras.layers.Dense(1)
     ])
+
+    for layer in range(layers - 1):
+        model.add(keras.layers.Dense(neurons, activation='sigmoid'))
+
+    model.add(keras.layers.Dense(1))
+    model.save(name + "_model.h5")
 
     model.compile(optimizer='adam', loss='mean_squared_error')
 
     return model
 
 
-def use_model(model, x, y, cycles, file_name, fps):
-    frame_writer = video_maker.create_video_formatter(file_name, fps)
+def use_model(model, x, y, cycles, file_name):
+    frame_writer = video_maker.create_video_formatter(file_name)
 
     # Train the model
     for cycle in range(cycles):
