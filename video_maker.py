@@ -2,8 +2,9 @@ import cv2
 import os
 
 
-def create_video_formatter(file_name, fps, window_size):
-    video_name = file_name + "_function_video.mp4"
+def create_video_formatter(file_name, fps):
+    video_name = "videos/" + file_name + "_function_video.mp4"
+    window_size = (640, 480)
 
     fourcc = cv2.VideoWriter_fourcc(*"mp4v")  # Codec
     video_writer = cv2.VideoWriter(video_name, fourcc, fps, window_size)

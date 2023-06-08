@@ -1,5 +1,4 @@
 import video_maker
-
 import matplotlib.pyplot as plt
 from tensorflow import keras
 
@@ -17,8 +16,8 @@ def create_model(neurons):
     return model
 
 
-def use_model(model, x, y, cycles, file_name, fps, window_size):
-    frame_writer = video_maker.create_video_formatter(file_name, fps, window_size)
+def use_model(model, x, y, cycles, file_name, fps):
+    frame_writer = video_maker.create_video_formatter(file_name, fps)
 
     # Train the model
     for cycle in range(cycles):

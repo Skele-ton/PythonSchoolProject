@@ -4,11 +4,10 @@ import numpy as np
 # Constants
 FILE_NAME = "sine"
 
-DATA_LENGTH = 2
 NEURONS_PER_LAYER = 20
-TRAINING_CYCLES = 30
+TRAINING_CYCLES = 5
+DATA_LENGTH = 2
 FPS = 10
-WINDOW_SIZE = (640, 480)  # Width, height
 
 
 # Generate sine data
@@ -16,4 +15,4 @@ x = np.linspace(0, DATA_LENGTH * np.pi, 100)
 y = np.sin(x)
 
 sine_model = sine_cosine_model.create_model(NEURONS_PER_LAYER)
-sine_cosine_model.use_model(sine_model, x, y, TRAINING_CYCLES, FILE_NAME, FPS, WINDOW_SIZE)
+sine_cosine_model.use_model(sine_model, x, y, TRAINING_CYCLES, FILE_NAME, FPS)
