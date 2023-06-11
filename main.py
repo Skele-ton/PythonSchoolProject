@@ -1,21 +1,30 @@
-import sine_uti
-import cosine_uti
-
+import AI_model
 import tkinter as tk
 from tkinter import ttk
 import time
 from PIL import Image, ImageTk
 import os
 import cv2
-# import subprocess
 
 
 def destroy_prev_screen():
     for widget in root.winfo_children():
         widget.destroy()
+    root.update()
 
 
-def create_home_screen():
+def release_destroy_return(cap):
+    cap.release()
+    home_screen()
+
+
+def release_delete(cap):
+    cap.release()
+    root.destroy()
+    root.quit()
+
+
+def home_screen():
     destroy_prev_screen()
 
     sin_img = Image.open("images/sine_tkinter.png")
@@ -29,15 +38,19 @@ def create_home_screen():
     title = ttk.Label(root, text="Choose a function")
     button_grid = ttk.Frame(root)
     sin_button = ttk.Button(button_grid, text="Sine", image=sin_btn_img, compound="bottom", padding=(10, 5, 10, 5),
-                            command=lambda: create_pre_start_screen("sine"))
+                            command=lambda: selector_screen("sine"))
     sin_button.image = sin_btn_img
+
     cos_button = ttk.Button(button_grid, text="Cosine", image=cos_btn_img, compound="bottom", padding=(10, 5, 10, 5),
-                            command=lambda: create_pre_start_screen("cosine"))
+                            command=lambda: selector_screen("cosine"))
     cos_button.image = cos_btn_img
+
     tan_button = ttk.Button(button_grid, text="Tangent", padding=(10, 5, 10, 5),
-                            command=lambda: create_pre_start_screen("tan"))
+                            command=lambda: selector_screen("tangent"))
+
     cot_button = ttk.Button(button_grid, text="Cotangent", padding=(10, 5, 10, 5),
-                            command=lambda: create_pre_start_screen("cotan"))
+                            command=lambda: selector_screen("cotangent"))
+
     end_button = ttk.Button(root, text="Exit", padding=(10, 5, 10, 5), command=root.destroy)
 
     # Layout
@@ -50,7 +63,7 @@ def create_home_screen():
     end_button.pack()
 
 
-def create_pre_start_screen(function_name):
+def selector_screen(function_name):
     destroy_prev_screen()
 
     var_file_name = "variables/" + function_name + "_vars.txt"
@@ -69,25 +82,25 @@ def create_pre_start_screen(function_name):
                 default_length = lines[3].strip()
 
     # Function Variables And Buttons
-    layers_label = tk.Label(root, text="Model Layers:", justify="left")
+    layers_label = ttk.Label(root, text="Hidden Layers:", compound="left", padding=(10, 5, 10, 5))
     layers_entry = tk.Entry(root)
     layers_entry.insert(tk.END, default_layers)
-    layers_err = tk.Label(root, text="", fg="red")
+    layers_err = ttk.Label(root, text="", style="Custom.TLabel")
 
-    neurons_label = tk.Label(root, text="Neurons per Layer:")
+    neurons_label = ttk.Label(root, text="Neurons per Layer:", padding=(10, 5, 10, 5))
     neurons_entry = tk.Entry(root)
     neurons_entry.insert(tk.END, default_neurons)
-    neurons_err = tk.Label(root, text="", fg="red")
+    neurons_err = ttk.Label(root, text="", style="Custom.TLabel")
 
-    cycles_label = tk.Label(root, text="Training Cycles:")
+    cycles_label = ttk.Label(root, text="Training Cycles:", padding=(10, 5, 10, 5))
     cycles_entry = tk.Entry(root)
     cycles_entry.insert(tk.END, default_cycles)
-    cycles_err = tk.Label(root, text="", fg="red")
+    cycles_err = ttk.Label(root, text="", style="Custom.TLabel")
 
-    length_label = tk.Label(root, text="Data Length x π:")
+    length_label = ttk.Label(root, text="Data Length x π:", padding=(10, 5, 10, 5))
     length_entry = tk.Entry(root)
     length_entry.insert(tk.END, default_length)
-    length_err = tk.Label(root, text="", fg="red")
+    length_err = ttk.Label(root, text="", style="Custom.TLabel")
 
     def entry_error_check():
         layers = layers_entry.get()
@@ -115,10 +128,17 @@ def create_pre_start_screen(function_name):
         length_err.config(text=length_err_text)
 
         if not layers_err_text and not neurons_err_text and not cycles_err_text and not length_err_text:
-            start_function(function_name, int(layers), int(neurons), int(cycles), int(length))
+            var_file_name = "variables/" + function_name + "_vars.txt"
+            with open(var_file_name, 'w') as file:
+                file.write(f'{layers}\n')
+                file.write(f'{neurons}\n')
+                file.write(f'{cycles}\n')
+                file.write(f'{length}\n')
 
-    start_button = tk.Button(root, text="Start", command=entry_error_check)
-    home_button = tk.Button(root, text="Home", command=create_home_screen)
+            during_function_screen(function_name, int(layers), int(neurons), int(cycles), int(length))
+
+    start_button = ttk.Button(root, text="Start", command=entry_error_check, padding=(10, 5, 10, 5))
+    home_button = ttk.Button(root, text="Home", command=home_screen, padding=(10, 5, 10, 5))
 
     # Layout
     layers_label.grid(row=0, column=0, padx=10, pady=10)
@@ -141,51 +161,46 @@ def create_pre_start_screen(function_name):
     home_button.grid(row=8, column=3, padx=10, pady=10)
 
 
-def start_function(name, layers, neurons, cycles, length):
-    print("passed")
-
-    with open("variables/" + name + "_vars.txt", 'w') as file:
-        file.write(f'{layers}\n')
-        file.write(f'{neurons}\n')
-        file.write(f'{cycles}\n')
-        file.write(f'{length}\n')
-
-    if name == "sine":
-        sine_uti.make_sine(name, layers, neurons, cycles, length)
-        after_function("videos/sine_function_video.mp4")
-
-    if name == "cosine":
-        cosine_uti.make_cosine(name, layers, neurons, cycles, length)
-        after_function("videos/cosine_function_video.mp4")
-
-    if name == "tangent":
-        pass
-
-    if name == "cotangent":
-        pass
-
-
-# def after_function(video_name):
-#     destroy_prev_screen()
-
-#     def play_video():
-#         os.system(f'start {video_name}')
-
-#     video_button = tk.Button(root, text="Play Video", command=play_video)
-#     video_button.pack()
-
-def after_function(video_name):
+def during_function_screen(function_name, layers, neurons, cycles, length):
     destroy_prev_screen()
+
+    training_text = ttk.Label(root, text="Training Model", padding=(10, 5, 10, 5))
+    progress_text = ttk.Label(root, text=f"0 / {cycles} Cycles", padding=(10, 5, 10, 5))
+    training_text.pack()
+    progress_text.pack()
+    root.update()
+
+    model = AI_model.create_model(function_name, layers, neurons)
+    x, y = AI_model.create_data(function_name, length)
+    print(f"model: {model} \nx: {x} \ny: {y}")
+
+    def update_label_text(text):
+        progress_text.configure(text=text)
+        root.update()
+
+    final_loss = AI_model.use_model(model, x, y, cycles, function_name, update_label_text)
+    print(final_loss)
+    # after_function_screen("videos/sine_function_video.mp4")
+
+
+def after_function_screen(video_name):
+    destroy_prev_screen()
+
+    end_button = ttk.Button(root, text="Exit", padding=(10, 5, 10, 5), command=lambda: release_delete(cap))
+    home_button = ttk.Button(root, text="Home", padding=(10, 5, 10, 5), command=lambda: release_destroy_return(cap))
+
+    end_button.grid(row=0, column=0, sticky="nw")
+    home_button.grid(row=0, column=1, sticky="ne")
 
     cap = cv2.VideoCapture(video_name)
 
-    # Get the video dimensions
+    # Get the video dimensions :)
     width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
     height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
 
     # Create a canvas to display the video frames
     canvas = tk.Canvas(root, width=width, height=height, bg="white")
-    canvas.pack()
+    canvas.grid(row=1, columnspan=2, padx=10, pady=10)
 
     while True:
         while cap.isOpened():
@@ -212,8 +227,6 @@ def after_function(video_name):
         # Reset the video to the beginning
         cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
 
-    cap.release()
-
 
 if __name__ == "__main__":
     root = tk.Tk()
@@ -222,7 +235,9 @@ if __name__ == "__main__":
 
     style = ttk.Style(root)
     style.configure('.', font=('Calibri', 20))
-    create_home_screen()
+    style.configure("Custom.TLabel", foreground="red")
+
+    home_screen()
 
     root.eval('tk::PlaceWindow . center')
     # root.resizable(False, False)
