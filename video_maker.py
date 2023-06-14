@@ -1,9 +1,8 @@
 import cv2
-import os
 
 
 def create_video_formatter(function_name):
-    video_name = "videos/" + function_name + "_function_video.mp4"
+    video_name = f"{function_name}_function_video.mp4"
     window_size = (640, 480)
     fps = 10
 
@@ -12,16 +11,13 @@ def create_video_formatter(function_name):
     return video_writer
 
 
-def add_frame(video_writer, function_name):
+def add_frame(video_writer, cycle):
     # Read the frame image
-    frame_path = function_name + "_plot.png"
+    frame_path = f"plot_images/plot_{cycle}.png"
     frame = cv2.imread(frame_path)
 
     # Write the frame to the video
     video_writer.write(frame)
-
-    # Remove the frame image file
-    os.remove(frame_path)
 
 
 def release_video(video_writer):

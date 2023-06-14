@@ -1,10 +1,16 @@
 import AI_model
 import tkinter as tk
 from tkinter import ttk
-import time
 from PIL import Image, ImageTk
 import os
-import cv2
+
+
+def delete_files():
+    folder_path = "plot_images/"
+    files = os.listdir(folder_path)
+    for file in files:
+        file_path = os.path.join(folder_path, file)
+        os.remove(file_path)
 
 
 def destroy_prev_screen():
@@ -13,18 +19,8 @@ def destroy_prev_screen():
     root.update()
 
 
-def release_destroy_return(cap):
-    cap.release()
-    home_screen()
-
-
-def release_delete(cap):
-    cap.release()
-    root.destroy()
-    root.quit()
-
-
 def home_screen():
+    delete_files()
     destroy_prev_screen()
 
     sin_img = Image.open("images/sine_tkinter.png")
@@ -51,7 +47,7 @@ def home_screen():
     cot_button = ttk.Button(button_grid, text="Cotangent", padding=(10, 5, 10, 5),
                             command=lambda: selector_screen("cotangent"))
 
-    end_button = ttk.Button(root, text="Exit", padding=(10, 5, 10, 5), command=root.destroy)
+    end_button = ttk.Button(root, text="Exit", padding=(10, 5, 10, 5), command=lambda: [delete_files(), root.destroy()])
 
     # Layout
     title.pack()
@@ -66,11 +62,12 @@ def home_screen():
 def selector_screen(function_name):
     destroy_prev_screen()
 
-    var_file_name = "variables/" + function_name + "_vars.txt"
+    var_file_name = f"variables/{function_name}_vars.txt"
     default_layers = ""
     default_neurons = ""
     default_cycles = ""
     default_length = ""
+    video_check = 0
 
     if os.path.exists(var_file_name):
         with open(var_file_name, 'r') as file:
@@ -114,13 +111,13 @@ def selector_screen(function_name):
         length_err_text = ""
 
         if not layers.isdigit() or not 2 <= int(layers) <= 20:
-            layers_err_text = "Must be a Number Between 2 and 20!"
+            layers_err_text = "Whole Number Between 2 and 20!"
         if not neurons.isdigit() or not 10 <= int(neurons) <= 100:
-            neurons_err_text = "Must be Number Between 10 and 100!"
+            neurons_err_text = "Whole Number Between 10 and 100!"
         if not cycles.isdigit() or not 5 <= int(cycles) <= 500:
-            cycles_err_text = "Must be a Number Between 5 and 500\n(The More Cycles, The Longer Training Takes)!"
+            cycles_err_text = "Whole Number Between 5 and 500\n(The More Cycles, The Longer Training Takes!)"
         if not length.isdigit() or not 1 <= int(length) <= 5:
-            length_err_text = "Must be a Number Between 1 and 5 (2 is Recommended)"
+            length_err_text = "Whole Number Between 1 and 5 (2 is Recommended)"
 
         layers_err.config(text=layers_err_text)
         neurons_err.config(text=neurons_err_text)
@@ -128,17 +125,22 @@ def selector_screen(function_name):
         length_err.config(text=length_err_text)
 
         if not layers_err_text and not neurons_err_text and not cycles_err_text and not length_err_text:
-            var_file_name = "variables/" + function_name + "_vars.txt"
             with open(var_file_name, 'w') as file:
-                file.write(f'{layers}\n')
-                file.write(f'{neurons}\n')
-                file.write(f'{cycles}\n')
-                file.write(f'{length}\n')
+                file.write(f"{layers}\n")
+                file.write(f"{neurons}\n")
+                file.write(f"{cycles}\n")
+                file.write(f"{length}\n")
 
-            during_function_screen(function_name, int(layers), int(neurons), int(cycles), int(length))
+            during_function_screen(function_name, int(layers), int(neurons), int(cycles), int(length), video_check)
 
-    start_button = ttk.Button(root, text="Start", command=entry_error_check, padding=(10, 5, 10, 5))
-    home_button = ttk.Button(root, text="Home", command=home_screen, padding=(10, 5, 10, 5))
+    def start_with_video():
+        nonlocal video_check
+        video_check = 1
+        entry_error_check()
+
+    start_button = ttk.Button(root, text="Start", padding=(10, 5, 10, 5), command=entry_error_check)
+    start_with_video_button = ttk.Button(root, text="Start And Make Video", padding=(10, 5, 10, 5), command=start_with_video)
+    home_button = ttk.Button(root, text="Home", padding=(10, 5, 10, 5), command=home_screen)
 
     # Layout
     layers_label.grid(row=0, column=0, padx=10, pady=10)
@@ -157,14 +159,17 @@ def selector_screen(function_name):
     length_entry.grid(row=6, column=1, padx=10, pady=10)
     length_err.grid(row=7, column=0, padx=10, pady=10)
 
-    start_button.grid(row=8, columnspan=2, padx=10, pady=10)
+    start_button.grid(row=8, column=0, padx=10, pady=10)
+    start_with_video_button.grid(row=8, column=1, padx=10, pady=10)
     home_button.grid(row=8, column=3, padx=10, pady=10)
 
 
-def during_function_screen(function_name, layers, neurons, cycles, length):
+def during_function_screen(function_name, layers, neurons, cycles, length, video_check):
     destroy_prev_screen()
 
-    training_text = ttk.Label(root, text="Training Model", padding=(10, 5, 10, 5))
+    print(video_check)
+
+    training_text = ttk.Label(root, text="Training Model...", padding=(10, 5, 10, 5))
     progress_text = ttk.Label(root, text=f"0 / {cycles} Cycles", padding=(10, 5, 10, 5))
     training_text.pack()
     progress_text.pack()
@@ -178,58 +183,51 @@ def during_function_screen(function_name, layers, neurons, cycles, length):
         progress_text.configure(text=text)
         root.update()
 
-    final_loss = AI_model.use_model(model, x, y, cycles, function_name, update_label_text)
+    final_loss = AI_model.use_model(model, x, y, cycles, function_name, update_label_text, video_check)
     print(final_loss)
-    # after_function_screen("videos/sine_function_video.mp4")
+    after_function_screen(function_name, cycles)
 
 
-def after_function_screen(video_name):
+def play_video(plot_video, cycles):
+    current_image_number = 0  # Starting image number
+    max_image_number = cycles - 1  # Maximum image number
+    image_folder = "plot_images/"  # Folder containing the images
+
+    def update_image():
+        nonlocal current_image_number
+        if current_image_number <= max_image_number:
+            image_path = f"{image_folder}plot_{current_image_number}.png"
+            plot_image = tk.PhotoImage(file=image_path)
+            plot_video.configure(image=plot_image)
+            plot_video.image = plot_image
+            current_image_number += 1
+            root.after(100, update_image)  # Delay between image updates in milliseconds
+
+    update_image()
+
+
+def after_function_screen(function_name, cycles):
     destroy_prev_screen()
 
-    end_button = ttk.Button(root, text="Exit", padding=(10, 5, 10, 5), command=lambda: release_delete(cap))
-    home_button = ttk.Button(root, text="Home", padding=(10, 5, 10, 5), command=lambda: release_destroy_return(cap))
+    end_button = ttk.Button(root, text="Exit", padding=(10, 5, 10, 5),
+                            command=lambda: [delete_files(), root.destroy()])
+    home_button = ttk.Button(root, text="Home", padding=(10, 5, 10, 5), command=home_screen)
+    play_video_button = ttk.Button(root, text="Play Video", padding=(10, 5, 10, 5),
+                                   command=lambda: play_video(plot_video, cycles))
 
-    end_button.grid(row=0, column=0, sticky="nw")
-    home_button.grid(row=0, column=1, sticky="ne")
+    plot_image = tk.PhotoImage(file=f"plot_images/plot_{cycles - 1}.png")
+    plot_video = tk.Label(root, image=plot_image)
+    plot_video.image = plot_image
 
-    cap = cv2.VideoCapture(video_name)
-
-    # Get the video dimensions :)
-    width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-    height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-
-    # Create a canvas to display the video frames
-    canvas = tk.Canvas(root, width=width, height=height, bg="white")
-    canvas.grid(row=1, columnspan=2, padx=10, pady=10)
-
-    while True:
-        while cap.isOpened():
-            ret, frame = cap.read()
-
-            if ret:
-                # Convert the frame to RGB format
-                frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-
-                # Create an image from the frame
-                image = Image.fromarray(frame)
-                photo = ImageTk.PhotoImage(image)
-
-                # Update the canvas with the new image
-                canvas.create_image(0, 0, image=photo, anchor=tk.NW)
-
-                time.sleep(0.1)
-                root.update()
-            else:
-                break
-
-        time.sleep(2)
-
-        # Reset the video to the beginning
-        cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
+    end_button.grid(row=0, column=0)
+    play_video_button.grid(row=0, column=1)
+    home_button.grid(row=0, column=2)
+    plot_video.grid(row=1, columnspan=3)
 
 
 if __name__ == "__main__":
     root = tk.Tk()
+    root.protocol("WM_DELETE_WINDOW", lambda: [delete_files(), root.destroy()])
     root.title("AI Trigonometry Functions Showcase")
     root.geometry("800x600")
 

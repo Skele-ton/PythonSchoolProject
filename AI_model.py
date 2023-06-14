@@ -14,7 +14,7 @@ def create_model(function_name, layers, neurons):
         model.add(keras.layers.Dense(neurons, activation='sigmoid'))
 
     model.add(keras.layers.Dense(1))
-    model.save("models/" + function_name + "_model.h5")
+    model.save(f"models/{function_name}_model.h5")
 
     model.compile(optimizer='adam', loss='mean_squared_error')
 
@@ -23,7 +23,7 @@ def create_model(function_name, layers, neurons):
 
 def create_data(function_name, length):
     # Generate sine data
-    x = np.linspace(0, length * np.pi, 100)
+    x = np.linspace(0, length * np.pi, length * 100)
 
     if function_name == "sine":
         y = np.sin(x)
@@ -40,8 +40,9 @@ def create_data(function_name, length):
     return x, y
 
 
-def use_model(model, x, y, cycles, function_name, update_label_text):
-    frame_writer = video_maker.create_video_formatter(function_name)
+def use_model(model, x, y, cycles, function_name, update_label_text, video_check):
+    if video_check == 1:
+        frame_writer = video_maker.create_video_formatter(function_name)
 
     # Train the model
     for cycle in range(cycles):
@@ -51,18 +52,20 @@ def use_model(model, x, y, cycles, function_name, update_label_text):
         fig, ax = plt.subplots()
         ax.plot(x, y, label='Original')
         ax.plot(x, y_pred, label='Predicted')
-        ax.set_title(function_name.capitalize() + ' Wave Prediction')
+        ax.set_title(f"{function_name.capitalize()} Wave Prediction")
         ax.legend()
 
         # Save the current plot as an image file
-        fig.savefig(function_name + "_plot.png")
+        fig.savefig(f"plot_images/plot_{str(cycle)}.png")
         plt.close(fig)
 
-        video_maker.add_frame(frame_writer, function_name)
+        if video_check == 1:
+            video_maker.add_frame(frame_writer, cycle)
 
         update_label_text(f"{cycle + 1} / {cycles} Cycles")
 
-    video_maker.release_video(frame_writer)
+    if video_check == 1:
+        video_maker.release_video(frame_writer)
 
     history = model.fit(x, y, epochs=100, verbose=1)
     final_loss = history.history['loss'][-1]
