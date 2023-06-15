@@ -1,0 +1,4 @@
+Layers:20
+Neurons:100
+Cycles:10
+Length:5

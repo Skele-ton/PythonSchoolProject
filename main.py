@@ -153,7 +153,7 @@ def selector_screen(function_name):
         if not cycles.isdigit() or not 5 <= int(cycles) <= 500:
             cycles_err_text = "Whole Number Between 5 and 500\nThe More Cycles, The Longer Training Takes!"
         if not length.isdigit() or not 1 <= int(length) <= 5:
-            length_err_text = "Whole Number Between 1 and 5\n2 is Recommended"
+            length_err_text = "Whole Number Between 1 and 5\nThe Longer Data, The Longer Training Takes!"
 
         layers_err.config(text=layers_err_text)
         neurons_err.config(text=neurons_err_text)
@@ -233,19 +233,17 @@ def during_training_screen(function_name, layers, neurons, cycles, length, video
         root.update()
 
     final_loss = AI_model.use_model(model, x, y, cycles, function_name, update_label_text, video_check)
-    after_training_screen(function_name, cycles, final_loss)
+    after_training_screen(cycles, final_loss)
 
 
 # Screen after training the model
-def after_training_screen(function_name, cycles, final_loss):
+def after_training_screen(cycles, final_loss):
     destroy_prev_screen()
 
     end_frame = tk.Frame(root)
 
     play_video_button = ttk.Button(end_frame, text="Play Video",
                                    command=lambda: play_video(plot_video, cycles))
-    see_model_button = ttk.Button(end_frame, text="See Your Model",
-                                  command=lambda: os.startfile(f"models/{function_name}_model.h5"))
 
     plot_image = tk.PhotoImage(file=f"plot_images/plot_{cycles - 1}.png")
     plot_video = tk.Label(end_frame, image=plot_image)
@@ -258,8 +256,7 @@ def after_training_screen(function_name, cycles, final_loss):
 
     # Layout
     end_frame.pack()
-    play_video_button.grid(row=0, column=0, padx=10, pady=10)
-    see_model_button.grid(row=0, column=1, padx=10, pady=10)
+    play_video_button.grid(row=0, columnspan=2, padx=10, pady=10)
     plot_video.grid(row=1, columnspan=2, padx=10, pady=10)
     loss_label.grid(row=2, columnspan=2, padx=10, pady=15)
     home_button.grid(row=3, column=0, padx=10, pady=10)

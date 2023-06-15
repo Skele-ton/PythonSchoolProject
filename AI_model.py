@@ -34,11 +34,11 @@ def create_data(function_name, length):
         y = np.cos(x)
 
     elif function_name == "tangent":
-        x = np.linspace(-2 * np.pi, 2 * np.pi, length * 250)
+        x = np.linspace(-(length / 2) * np.pi, (length / 2) * np.pi, length * 100)
         y = np.tan(x)
 
     elif function_name == "cotangent":
-        x = np.linspace(-2 * np.pi, 2 * np.pi, length * 250)
+        x = np.linspace(-(length / 2) * np.pi, (length / 2) * np.pi, length * 100)
         y = 1 / np.tan(x)
 
     return x, y
@@ -80,4 +80,9 @@ def use_model(model, x, y, cycles, function_name, update_label_text, video_check
 
     history = model.fit(x, y, epochs=100, verbose=1)
     final_loss = history.history["loss"][-1]
-    return str(final_loss)[:7]
+
+    if final_loss > 999999999:
+        return "A lot"
+
+    else:
+        return str("{:.8f}".format(final_loss))
