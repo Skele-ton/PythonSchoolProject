@@ -1,6 +1,7 @@
 import cv2
 
 
+# Create initial video writer
 def create_video_formatter(function_name):
     video_name = f"{function_name}_function_video.mp4"
     window_size = (640, 480)
@@ -21,5 +22,5 @@ def add_frame(video_writer, cycle):
 
 
 def release_video(video_writer):
-    # Release the VideoWriter and close the video file
+    # Release the video writer and close the video file
     video_writer.release()
